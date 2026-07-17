@@ -2,8 +2,8 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>רות ויצחק לב ז"ל - אילן יוחסין</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>אילן משפחה - יצחק ורות לב ז"ל</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
@@ -12,7 +12,7 @@
             font-family: 'Assistant', sans-serif;
             background-color: #f8fafc;
             overflow: hidden;
-            touch-action: none;
+            touch-action: none; /* מניעת התנהגות ברירת מחדל של דפדפן נייד לצורך מחוות מגע מותאמות אישית */
         }
 
         /* רקע רשת עדין לתצוגה הנדסית נקייה */
@@ -39,62 +39,55 @@
 
         /* מעברים חלקים לזום ותנועה */
         .transition-all-custom {
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
         }
     </style>
 </head>
 <body class="relative w-screen h-screen bg-slate-50 flex flex-col select-none">
 
-    <!-- סרגל כלים עליון למשתמש: כותרת, חיפוש, כפתורי זום -->
-    <header class="w-full bg-white border-b border-slate-200 shadow-sm z-30 px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <!-- סרגל כלים עליון רספונסיבי: כותרת, חיפוש, וכפתורי שליטה -->
+    <header class="w-full bg-white border-b border-slate-200 shadow-sm z-30 px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 shrink-0">
         <div>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">רות ויצחק לב ז"ל</h1>
-            <p class="text-sm text-slate-500 mt-1">גרור להזזה, השתמש בגלגלת לזום או בכפתורים למטה</p>
+            <h1 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight text-center md:text-right">אילן משפחה - יצחק ורות לב ז"ל</h1>
+            <p class="text-xs md:text-sm text-slate-500 mt-0.5 text-center md:text-right">גרור להזזה, השתמש בגלגלת/צביטה לזום או בכפתורים משמאל</p>
         </div>
 
-        <div class="flex items-center gap-4">
-            <!-- חיפוש שמות מהיר -->
-            <div class="relative w-full md:w-64">
-                <input type="text" id="search-input" placeholder="חפש שם באילן..." 
-                       class="w-full px-4 py-2 bg-slate-100 text-slate-800 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all">
-                <button id="search-clear-btn" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 hidden text-xs font-bold">❌</button>
-            </div>
-
-            <!-- כפתורי שליטה בתצוגה -->
-            <div class="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
-                <button onclick="zoomIn()" class="px-3 py-1.5 hover:bg-white rounded-md text-slate-700 font-semibold text-sm transition-all shadow-sm" title="הגדל">➕</button>
-                <button onclick="zoomOut()" class="px-3 py-1.5 hover:bg-white rounded-md text-slate-700 font-semibold text-sm transition-all shadow-sm" title="הקטן">➖</button>
-                <button onclick="resetZoom()" class="px-3 py-1.5 hover:bg-white rounded-md text-slate-700 font-semibold text-sm transition-all shadow-sm" title="אפס תצוגה">🔄 מרכז</button>
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <!-- כפתורי שליטה בתצוגה מותאמים ללחיצה נוחה בניידים -->
+            <div class="flex items-center justify-center bg-slate-100 rounded-xl p-1 border border-slate-200 w-full sm:w-auto shrink-0">
+                <button onclick="zoomIn()" class="flex-1 sm:flex-initial px-4 py-2 hover:bg-white rounded-lg text-slate-700 font-semibold text-base transition-all shadow-sm min-w-[44px] min-h-[44px] flex items-center justify-center" title="הגדל">➕</button>
+                <button onclick="zoomOut()" class="flex-1 sm:flex-initial px-4 py-2 hover:bg-white rounded-lg text-slate-700 font-semibold text-base transition-all shadow-sm min-w-[44px] min-h-[44px] flex items-center justify-center" title="הקטן">➖</button>
+                <button onclick="resetZoom()" class="flex-2 sm:flex-initial px-4 py-2 hover:bg-white rounded-lg text-slate-700 font-semibold text-sm transition-all shadow-sm min-w-[100px] min-h-[44px] flex items-center justify-center gap-1" title="אפס תצוגה">🔄 מרכז</button>
             </div>
         </div>
     </header>
 
-    <!-- אזור העבודה האינטראקטיבי המרכזי שבו מוצג האילן -->
+    <!-- אזור העבודה המרכזי שבו מוצג האילן -->
     <main id="viewport" class="flex-1 w-full overflow-hidden bg-grid relative cursor-grab active:cursor-grabbing">
         
         <div id="tree-canvas" class="absolute origin-top-left transition-all-custom" style="transform: translate(0px, 0px) scale(1);">
-            <div class="p-12 flex flex-col items-center">
+            <div class="p-8 md:p-12 flex flex-col items-center">
                 
                 <!-- דור ראשון (ראש האילן) -->
                 <div class="relative mb-16 flex flex-col items-center">
-                    <div class="tree-node px-8 py-5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white font-extrabold rounded-2xl shadow-xl border-2 border-emerald-950 text-2xl tracking-wide">
-                        רות ויצחק לב ז"ל
+                    <div class="tree-node px-8 py-5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white font-extrabold rounded-2xl shadow-xl border-2 border-emerald-950 text-xl md:text-2xl tracking-wide text-center">
+                        יצחק ורות לב ז"ל
                     </div>
                     <!-- קו מקשר אנכי כלפי מטה -->
                     <div class="w-1 h-16 bg-emerald-700"></div>
                 </div>
 
                 <!-- דור שני - אופקי בלבד. כל עמודה מייצגת ענף של דור שני -->
-                <div class="relative flex flex-row flex-nowrap gap-16 items-start">
+                <div class="relative flex flex-row flex-nowrap gap-8 md:gap-16 items-start">
                     
                     <!-- קו מקשר אופקי מעל כל הענפים של הדור השני -->
                     <div class="absolute top-0 left-[8%] right-[8%] h-1 bg-slate-300 -translate-y-8 z-0"></div>
 
                     <!-- ================= ענף 1: שלומית-דבורה ואהרון סוכצ'בסקי ================= -->
-                    <div class="flex flex-col items-center min-w-[290px] relative">
+                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
                         <!-- קו מקשר אנכי לענף -->
                         <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-lg z-10 w-full mb-8">
+                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
                             שלומית־דבורה ואהרון סוכצ'בסקי
                         </div>
                         
@@ -256,10 +249,10 @@
                     </div>
 
                     <!-- ================= ענף 2: נתן ובלה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[290px] relative">
+                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
                         <!-- קו מקשר אנכי לענף -->
                         <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-lg z-10 w-full mb-8">
+                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
                             נתן ובלה לב
                         </div>
 
@@ -401,10 +394,10 @@
                     </div>
 
                     <!-- ================= ענף 3: פינחס-אליה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[290px] relative">
+                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
                         <!-- קו מקשר אנכי לענף -->
                         <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-lg z-10 w-full mb-8">
+                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
                             פינחס־אליה לב
                         </div>
                         
@@ -412,10 +405,10 @@
                     </div>
 
                     <!-- ================= ענף 4: מרדכי ואסתר לב ================= -->
-                    <div class="flex flex-col items-center min-w-[290px] relative">
+                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
                         <!-- קו מקשר אנכי לענף -->
                         <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-lg z-10 w-full mb-8">
+                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
                             מרדכי ואסתר לב
                         </div>
 
@@ -489,10 +482,10 @@
                     </div>
 
                     <!-- ================= ענף 5: בנימין-זאב ומלכה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[290px] relative">
+                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
                         <!-- קו מקשר אנכי לענף -->
                         <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-lg z-10 w-full mb-8">
+                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
                             בנימין־זאב ומלכה לב
                         </div>
 
@@ -538,10 +531,10 @@
                     </div>
 
                     <!-- ================= ענף 6: מיכאל ואילה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[290px] relative">
+                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
                         <!-- קו מקשר אנכי לענף -->
                         <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-lg z-10 w-full mb-8">
+                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
                             מיכאל ואילה לב
                         </div>
 
@@ -629,15 +622,23 @@
         let start = { x: 0, y: 0 };
         let isDragging = false;
 
+        // משתנים למחוות צביטה (Pinch-to-zoom) במסכי מגע
+        let tpCache = [];
+        let startDist = 0;
+        let startScale = 1;
+
         const viewport = document.getElementById('viewport');
         const treeCanvas = document.getElementById('tree-canvas');
-        const searchInput = document.getElementById('search-input');
-        const searchClearBtn = document.getElementById('search-clear-btn');
 
-        // אתחול מיקום ראשוני של עץ המשפחה שימורכז על המסך
+        // אתחול מיקום ראשוני של עץ המשפחה
         window.onload = function() {
             resetZoom();
         };
+
+        // עדכון קוד עם מאזין אירועים לשינוי גודל חלון או סיבוב מסך
+        window.addEventListener('resize', function() {
+            resetZoom();
+        });
 
         function updateTransform() {
             treeCanvas.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
@@ -645,35 +646,34 @@
 
         // הגדלה (Zoom In)
         function zoomIn() {
-            scale = Math.min(scale + 0.1, 2);
+            scale = Math.min(scale + 0.15, 2);
             updateTransform();
         }
 
         // הקטנה (Zoom Out)
         function zoomOut() {
-            scale = Math.max(scale - 0.1, 0.2);
+            scale = Math.max(scale - 0.15, 0.2);
             updateTransform();
         }
 
-        // אפס מיקום ומרכז
+        // אפס מיקום ומרכז בצורה רספונסיבית וחכמה
         function resetZoom() {
             const viewportRect = viewport.getBoundingClientRect();
             const canvasRect = treeCanvas.getBoundingClientRect();
             
-            // הגדרת קנה מידה התחלתי לפי רוחב המסך
-            scale = Math.min(viewportRect.width / canvasRect.width, 0.9);
-            if (scale < 0.3) scale = 0.3; // קביעת ערך מינימלי בטוח
+            // הגדרת קנה מידה התחלתי לפי רוחב המסך הזמין בפועל
+            scale = Math.min(viewportRect.width / canvasRect.width, 0.85);
+            if (scale < 0.25) scale = 0.25; // קביעת ערך מינימלי למניעת התכווצות יתר בניידים קטנים מאוד
             
-            // חישוב המרכז
+            // חישוב המרכז המדויק
             pointX = (viewportRect.width - (canvasRect.width * scale)) / 2;
             pointY = 40; // ריווח קל מלמעלה
             
             updateTransform();
         }
 
-        // התחלת גרירה
+        // התחלת גרירה בעכבר
         viewport.addEventListener('mousedown', function(e) {
-            // התעלמות מגרירה אם לוחצים על כפתור או פוקוס חיפוש
             if (e.target.closest('input') || e.target.closest('button')) return;
             
             isDragging = true;
@@ -681,7 +681,7 @@
             start = { x: e.clientX - pointX, y: e.clientY - pointY };
         });
 
-        // תנועת גרירה
+        // תנועת גרירה בעכבר
         window.addEventListener('mousemove', function(e) {
             if (!isDragging) return;
             pointX = e.clientX - start.x;
@@ -689,7 +689,7 @@
             updateTransform();
         });
 
-        // סיום גרירה
+        // סיום גרירה בעכבר
         window.addEventListener('mouseup', function() {
             isDragging = false;
             viewport.style.cursor = 'grab';
@@ -702,7 +702,6 @@
             const mouseX = e.clientX - viewport.getBoundingClientRect().left;
             const mouseY = e.clientY - viewport.getBoundingClientRect().top;
 
-            // חישוב הקורדינאטות היחסיות לפני הזום
             const targetX = (mouseX - pointX) / scale;
             const targetY = (mouseY - pointY) / scale;
 
@@ -712,101 +711,77 @@
                 scale = Math.max(scale - zoomIntensity, 0.2);
             }
 
-            // חישוב המיקום החדש על מנת לשמור את העכבר בנקודת מיקוד קבועה בזמן הזום
             pointX = mouseX - targetX * scale;
             pointY = mouseY - targetY * scale;
 
             updateTransform();
         }, { passive: false });
 
-        // תמיכה במחוות מגע לניידים וטאבלטים (גרירה)
-        let touchStart = { x: 0, y: 0 };
+        // תמיכה מורחבת במגע לניידים וטאבלטים (גרירה וזום בצביטה)
         viewport.addEventListener('touchstart', function(e) {
             if (e.target.closest('input') || e.target.closest('button')) return;
+
             if (e.touches.length === 1) {
+                // גרירה באצבע אחת
                 isDragging = true;
-                touchStart = { x: e.touches[0].clientX - pointX, y: e.touches[0].clientY - pointY };
+                const touch = e.touches[0];
+                start = { x: touch.clientX - pointX, y: touch.clientY - pointY };
+            } else if (e.touches.length === 2) {
+                // זיהוי צביטה לשתי אצבעות
+                isDragging = false; // מניעת גרירה במקביל לצביטה
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                startDist = Math.sqrt(dx * dx + dy * dy);
+                startScale = scale;
+
+                // חישוב מרכז הצביטה לצורך מיקוד הזום
+                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - viewport.getBoundingClientRect().left;
+                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - viewport.getBoundingClientRect().top;
+                this.targetX = (midX - pointX) / scale;
+                this.targetY = (midY - pointY) / scale;
+                this.midX = midX;
+                this.midY = midY;
             }
-        });
+        }, { passive: true });
 
         viewport.addEventListener('touchmove', function(e) {
-            if (!isDragging) return;
-            if (e.touches.length === 1) {
-                pointX = e.touches[0].clientX - touchStart.x;
-                pointY = e.touches[0].clientY - touchStart.y;
+            if (e.touches.length === 1 && isDragging) {
+                // תנועת גרירה
+                const touch = e.touches[0];
+                pointX = touch.clientX - start.x;
+                pointY = touch.clientY - start.y;
                 updateTransform();
-            }
-        });
+            } else if (e.touches.length === 2 && startDist > 0) {
+                // תנועת צביטה (זום)
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                // חישוב סקייל חדש
+                let factor = dist / startDist;
+                scale = Math.max(0.2, Math.min(startScale * factor, 2));
 
-        viewport.addEventListener('touchend', function() {
-            isDragging = false;
-        });
-
-        // פונקציית חיפוש וסימון בני משפחה
-        searchInput.addEventListener('input', function(e) {
-            const query = e.target.value.trim().toLowerCase();
-            
-            if (query.length > 0) {
-                searchClearBtn.classList.remove('hidden');
-            } else {
-                searchClearBtn.classList.add('hidden');
-            }
-            
-            // איפוס סימון קודם
-            document.querySelectorAll('.tree-node').forEach(node => {
-                node.classList.remove('ring-4', 'ring-amber-500', 'scale-105', 'bg-amber-50', 'border-amber-400');
-            });
-
-            if (!query) return;
-
-            let firstMatch = null;
-
-            document.querySelectorAll('.tree-node').forEach(node => {
-                const text = node.textContent.trim().toLowerCase();
-                if (text.includes(query)) {
-                    node.classList.add('ring-4', 'ring-amber-500', 'scale-105');
-                    
-                    // במידה וזה תא פנימי, נשנה מעט את צבעו כדי להדגיש
-                    if (!node.classList.contains('bg-gradient-to-r') && !node.classList.contains('bg-white')) {
-                        node.classList.add('bg-amber-50', 'border-amber-400');
-                    }
-                    
-                    if (!firstMatch) {
-                        firstMatch = node;
-                    }
+                // שמירה על מיקוד הזום במרכז שבין שתי האצבעות
+                if (this.targetX !== undefined && this.targetY !== undefined) {
+                    pointX = this.midX - this.targetX * scale;
+                    pointY = this.midY - this.targetY * scale;
                 }
-            });
-
-            // ניווט אוטומטי אל ההתאמה הראשונה שנמצאה באילן
-            if (firstMatch) {
-                const rect = firstMatch.getBoundingClientRect();
-                const viewRect = viewport.getBoundingClientRect();
-                
-                // הזזת הקנבס כך שההתאמה תהיה במרכז התצוגה
-                const offsetX = (viewRect.width / 2) - (rect.width / 2);
-                const offsetY = (viewRect.height / 2) - (rect.height / 2);
-                
-                pointX = pointX + (viewRect.left + offsetX - rect.left);
-                pointY = pointY + (viewRect.top + offsetY - rect.top);
-                
-                // החזרת זום בטוח במידה והמשתמש קרוב מדי או רחוק מדי
-                if (scale < 0.6) scale = 0.75;
-                
                 updateTransform();
             }
-        });
+        }, { passive: true });
 
-        // כפתור ניקוי החיפוש
-        searchClearBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            searchClearBtn.classList.add('hidden');
-            searchInput.focus();
-            
-            // הסרת סימונים מהעץ
-            document.querySelectorAll('.tree-node').forEach(node => {
-                node.classList.remove('ring-4', 'ring-amber-500', 'scale-105', 'bg-amber-50', 'border-amber-400');
-            });
+        viewport.addEventListener('touchend', function(e) {
+            if (e.touches.length < 2) {
+                startDist = 0;
+            }
+            if (e.touches.length === 0) {
+                isDragging = false;
+            }
         });
     </script>
 </body>
 </html>
+```
+eof
+
+הסרתי את תיבת החיפוש ואת הקוד התואם לה לגמרי. כעת הממשק נקי ומציג רק את האילן המרכזי, כפתורי השליטה וכותרת המשפחה המעודכנת.

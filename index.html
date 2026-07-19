@@ -2,786 +2,133 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>אילן משפחה - יצחק ורות לב ז"ל</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        body {
-            font-family: 'Assistant', sans-serif;
-            background-color: #f8fafc;
-            overflow: hidden;
-            touch-action: none; /* מניעת התנהגות ברירת מחדל של דפדפן נייד לצורך מחוות מגע מותאמות אישית */
+        /* מחבר את הדורות */
+        .tree-container { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
+        .gen-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; margin-bottom: 30px; }
+        
+        .node { 
+            background: white; 
+            border: 2px solid #3b82f6; 
+            border-radius: 12px; 
+            padding: 12px; 
+            margin: 5px; 
+            min-width: 140px; 
+            text-align: center; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            position: relative;
         }
 
-        /* רקע רשת עדין לתצוגה הנדסית נקייה */
-        .bg-grid {
-            background-size: 30px 30px;
-            background-image: radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px);
+        .leaf-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 5px; 
+            margin-top: 10px; 
+            border-top: 1px dashed #cbd5e1; 
+            padding-top: 8px;
         }
 
-        /* התאמת פסי גלילה */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        .leaf { 
+            font-size: 0.75rem; 
+            color: #475569; 
+            background: #f1f5f9; 
+            border: 1px solid #e2e8f0; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
         }
 
-        /* מעברים חלקים לזום ותנועה */
-        .transition-all-custom {
-            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .gen-row { flex-direction: column; align-items: center; }
+            .node { width: 90%; min-width: auto; }
         }
     </style>
 </head>
-<body class="relative w-screen h-screen bg-slate-50 flex flex-col select-none">
+<body class="bg-slate-50 min-h-screen">
+    <div class="text-center py-10 px-4">
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-800 bg-white p-6 rounded-2xl shadow-lg inline-block border-b-4 border-blue-500">יצחק ורות לב ז"ל</h1>
+    </div>
 
-    <!-- סרגל כלים עליון רספונסיבי: כותרת, חיפוש, וכפתורי שליטה -->
-    <header class="w-full bg-white border-b border-slate-200 shadow-sm z-30 px-4 py-3 md:px-6 md:py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 shrink-0">
-        <div>
-            <h1 class="text-xl md:text-2xl font-extrabold text-slate-800 tracking-tight text-center md:text-right">אילן משפחה - יצחק ורות לב ז"ל</h1>
-            <p class="text-xs md:text-sm text-slate-500 mt-0.5 text-center md:text-right">גרור להזזה, השתמש בגלגלת/צביטה לזום או בכפתורים משמאל</p>
-        </div>
-
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-            <!-- כפתורי שליטה בתצוגה מותאמים ללחיצה נוחה בניידים -->
-            <div class="flex items-center justify-center bg-slate-100 rounded-xl p-1 border border-slate-200 w-full sm:w-auto shrink-0">
-                <button onclick="zoomIn()" class="flex-1 sm:flex-initial px-4 py-2 hover:bg-white rounded-lg text-slate-700 font-semibold text-base transition-all shadow-sm min-w-[44px] min-h-[44px] flex items-center justify-center" title="הגדל">➕</button>
-                <button onclick="zoomOut()" class="flex-1 sm:flex-initial px-4 py-2 hover:bg-white rounded-lg text-slate-700 font-semibold text-base transition-all shadow-sm min-w-[44px] min-h-[44px] flex items-center justify-center" title="הקטן">➖</button>
-                <button onclick="resetZoom()" class="flex-2 sm:flex-initial px-4 py-2 hover:bg-white rounded-lg text-slate-700 font-semibold text-sm transition-all shadow-sm min-w-[100px] min-h-[44px] flex items-center justify-center gap-1" title="אפס תצוגה">🔄 מרכז</button>
-            </div>
-        </div>
-    </header>
-
-    <!-- אזור העבודה המרכזי שבו מוצג האילן -->
-    <main id="viewport" class="flex-1 w-full overflow-hidden bg-grid relative cursor-grab active:cursor-grabbing">
-        
-        <div id="tree-canvas" class="absolute origin-top-left transition-all-custom" style="transform: translate(0px, 0px) scale(1);">
-            <div class="p-8 md:p-12 flex flex-col items-center">
-                
-                <!-- דור ראשון (ראש האילן) -->
-                <div class="relative mb-16 flex flex-col items-center">
-                    <div class="tree-node px-8 py-5 bg-gradient-to-r from-emerald-700 to-emerald-800 text-white font-extrabold rounded-2xl shadow-xl border-2 border-emerald-950 text-xl md:text-2xl tracking-wide text-center">
-                        יצחק ורות לב ז"ל
-                    </div>
-                    <!-- קו מקשר אנכי כלפי מטה -->
-                    <div class="w-1 h-16 bg-emerald-700"></div>
+    <div class="tree-container">
+        <div class="gen-row">
+            
+            <!-- אהרון ושלומית־דבורה סוכצ'בסקי -->
+            <div class="flex flex-col items-center">
+                <div class="node font-bold">אהרון ושלומית־דבורה סוכצ'בסקי</div>
+                <div class="gen-col mt-4">
+                    <div class="node">ישראל ושרה־לאה<div class="leaf-container"><div class="leaf">שמחה־בונם</div><div class="leaf">מלכה</div><div class="leaf">יצחק־מאיר</div><div class="leaf">שמואל־יהודה</div><div class="leaf">שלמה</div><div class="leaf">צבי־אלימלך</div><div class="leaf">יוטא־הענא</div></div></div>
+                    <div class="node">אברהם־מרדכי ואסתר־ליבה<div class="leaf-container"><div class="leaf">חנה־רוייזי</div><div class="leaf">יצחק</div><div class="leaf">רות</div><div class="leaf">שמואל</div><div class="leaf">חיים־יחזקאל</div></div></div>
+                    <div class="node">שמואל ורות<div class="leaf-container"><div class="leaf">רחל־רוייזי</div><div class="leaf">שרה־הינדה</div><div class="leaf">שלמה־זלמן</div><div class="leaf">יצחק־מאיר</div><div class="leaf">יהודית</div><div class="leaf">יוטא־הענא־ראצל</div></div></div>
+                    <div class="node">פייגה־מיכל לרנר<div class="leaf-container"><div class="leaf">שמחה־בונים</div><div class="leaf">ברוך־מנחם</div></div></div>
+                    <div class="node">שרה ואברהם־חיים מונדרי<div class="leaf-container"><div class="leaf">רות</div><div class="leaf">שמחה־בונם</div><div class="leaf">שמואל</div><div class="leaf">חנה־מרים</div><div class="leaf">חיה־ראצל</div><div class="leaf">יצחק</div></div></div>
+                    <div class="node">שמחה־בונם ורחל<div class="leaf-container"><div class="leaf">בלומה־טובה</div><div class="leaf">רות</div><div class="leaf">יוטא־הענא־ראצל</div><div class="leaf">ישראל</div></div></div>
+                    <div class="node">צבי־אלימלך ויוטא־הענא<div class="leaf-container"><div class="leaf">לאה־חנה</div><div class="leaf">רות</div></div></div>
                 </div>
-
-                <!-- דור שני - אופקי בלבד. כל עמודה מייצגת ענף של דור שני -->
-                <div class="relative flex flex-row flex-nowrap gap-8 md:gap-16 items-start">
-                    
-                    <!-- קו מקשר אופקי מעל כל הענפים של הדור השני -->
-                    <div class="absolute top-0 left-[8%] right-[8%] h-1 bg-slate-300 -translate-y-8 z-0"></div>
-
-                    <!-- ================= ענף 1: שלומית-דבורה ואהרון סוכצ'בסקי ================= -->
-                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
-                        <!-- קו מקשר אנכי לענף -->
-                        <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
-                            שלומית־דבורה ואהרון סוכצ'בסקי
-                        </div>
-                        
-                        <!-- קו שדרה אנכי המקשר את כל הדור השלישי והרביעי בענף זה -->
-                        <div class="absolute top-[52px] bottom-4 w-0.5 bg-slate-200 right-[24px]"></div>
-
-                        <!-- דור שלישי ורביעי - אנכיים בלבד -->
-                        <div class="flex flex-col gap-6 w-full pr-10 relative">
-                            
-                            <!-- דור 3: ישראל ושרה -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">ישראל ושרה</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שמחה־בונם
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            מלכה
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            יצחק־מאיר
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שמואל־יהודה
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שלמה
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            ?
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: אברהם-מרדכי ואסתר-ליבה -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">אברהם־מרדכי ואסתר־ליבה</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            חנה־רוייזי
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            יצחק
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            ?
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: שמואל ורות -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">שמואל ורות</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            רחל־רוייזי
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שרה־הינדה
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שלמה־זלמן
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            יצחק־מאיר
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: פייגה-מיכל לרנר -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">פייגה־מיכל לרנר</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שמחה־בונים
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            ברוך־מנחם
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: שרה ואברהם-חיים מונדרי -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">שרה ואברהם־חיים מונדרי</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            רות
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שמחה־בונם
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            בן ( נולד 1-7)
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: שמחה-בונם ורחל -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm text-slate-500">שמחה־בונם ורחל</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: צבי-אלימלך ויוטא-הענא -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">צבי־אלימלך ויוטא־הענא</div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- ================= ענף 2: נתן ובלה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
-                        <!-- קו מקשר אנכי לענף -->
-                        <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
-                            נתן ובלה לב
-                        </div>
-
-                        <!-- קו שדרה אנכי המקשר את כל הדור השלישי והרביעי בענף זה -->
-                        <div class="absolute top-[52px] bottom-4 w-0.5 bg-slate-200 right-[24px]"></div>
-
-                        <!-- דור שלישי ורביעי - אנכיים בלבד -->
-                        <div class="flex flex-col gap-6 w-full pr-10 relative">
-
-                            <!-- דור 3: מיכל ויונתן פרטוק -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">מיכל ויונתן פרטוק</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            הדר־רות
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            אוֹרִיָּה־זָ'היָה
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            אבינועם־חיים
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            יהודה־פנחס
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: יואל ודבורה לב -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">יואל ודבורה לב</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            ינון־יצחק
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            ידידיה
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            נילי
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: דוד-מנחם וחנה לב -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">דוד־מנחם וחנה לב</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            אילה־רות
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            רבקה
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            נעמה
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: לאה ויוסף-שלמה קצבורג -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">לאה ויוסף־שלמה קצבורג</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            מעיין־רות
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            ליאל־תהילה
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: מאיר ופנינה -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">מאיר ופנינה</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: צבי ואסתר-זיסל -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">צבי ואסתר־זיסל</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            מוריה
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: יצחק -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">יצחק</div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- ================= ענף 3: פינחס-אליה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
-                        <!-- קו מקשר אנכי לענף -->
-                        <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
-                            פינחס־אליה לב
-                        </div>
-                        
-                        <!-- אין צאצאים רשומים לענף זה -->
-                    </div>
-
-                    <!-- ================= ענף 4: מרדכי ואסתר לב ================= -->
-                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
-                        <!-- קו מקשר אנכי לענף -->
-                        <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
-                            מרדכי ואסתר לב
-                        </div>
-
-                        <!-- קו שדרה אנכי המקשר את כל הדור השלישי והרביעי בענף זה -->
-                        <div class="absolute top-[52px] bottom-4 w-0.5 bg-slate-200 right-[24px]"></div>
-
-                        <!-- דור שלישי ורביעי - אנכיים בלבד -->
-                        <div class="flex flex-col gap-6 w-full pr-10 relative">
-
-                            <!-- דור 3: יהודה-עוזר -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">יהודה־עוזר</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: מנחם -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">מנחם</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: נועה-רבקה ואליהו-משה-אברהם סינטס -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">נועה־רבקה ואליהו־משה־אברהם סינטס</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            מתן־חיים
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            סיוון
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: דבורה ויעקב איזקס -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">דבורה ויעקב איזקס</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: שרה -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">שרה</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: רוני -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">רוני</div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- ================= ענף 5: בנימין-זאב ומלכה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
-                        <!-- קו מקשר אנכי לענף -->
-                        <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
-                            בנימין־זאב ומלכה לב
-                        </div>
-
-                        <!-- קו שדרה אנכי המקשר את כל הדור השלישי והרביעי בענף זה -->
-                        <div class="absolute top-[52px] bottom-4 w-0.5 bg-slate-200 right-[24px]"></div>
-
-                        <!-- דור שלישי - אנכיים בלבד -->
-                        <div class="flex flex-col gap-6 w-full pr-10 relative">
-
-                            <!-- דור 3: טל-מרום -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">טל־מרום</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: אביעד -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">אביעד</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: איתן -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">איתן</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: זיו -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">זיו</div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- ================= ענף 6: מיכאל ואילה לב ================= -->
-                    <div class="flex flex-col items-center min-w-[270px] md:min-w-[290px] relative">
-                        <!-- קו מקשר אנכי לענף -->
-                        <div class="w-0.5 h-8 bg-slate-300 -translate-y-8 absolute top-0"></div>
-                        <div class="tree-node px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-950 font-extrabold rounded-xl shadow-md text-center text-base md:text-lg z-10 w-full mb-8">
-                            מיכאל ואילה לב
-                        </div>
-
-                        <!-- קו שדרה אנכי המקשר את כל הדור השלישי והרביעי בענף זה -->
-                        <div class="absolute top-[52px] bottom-4 w-0.5 bg-slate-200 right-[24px]"></div>
-
-                        <!-- דור שלישי ורביעי - אנכיים בלבד -->
-                        <div class="flex flex-col gap-6 w-full pr-10 relative">
-
-                            <!-- דור 3: עשהאל-חיים וחסד לב -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">עשהאל־חיים וחסד לב</div>
-                                    <!-- דור 4: אנכי בלבד -->
-                                    <div class="relative pr-4 mt-3 flex flex-col gap-2">
-                                        <div class="absolute right-1 top-0 bottom-2 w-0.5 bg-slate-300"></div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            שמואל־עוז
-                                        </div>
-                                        <div class="tree-node pr-3 flex items-center relative text-xs text-slate-600">
-                                            <div class="absolute right-[-12px] top-1/2 -translate-y-1/2 w-3 h-0.5 bg-slate-300"></div>
-                                            יעלה
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: צבי-נריה -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">צבי־נריה</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: מרים -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">מרים</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: אלידע -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">אלידע</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: שמחה -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">שמחה</div>
-                                </div>
-                            </div>
-
-                            <!-- דור 3: מעין -->
-                            <div class="relative flex flex-col">
-                                <div class="absolute right-[-16px] top-5 w-4 h-0.5 bg-slate-300"></div>
-                                <div class="tree-node p-4 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm">
-                                    <div class="font-bold text-slate-800 text-sm">מעין</div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-
             </div>
+
+            <!-- נתן ובלה לב -->
+            <div class="flex flex-col items-center">
+                <div class="node font-bold">נתן ובלה לב</div>
+                <div class="gen-col mt-4">
+                    <div class="node">מיכל ויונתן פרטוק<div class="leaf-container"><div class="leaf">הדר־רות</div><div class="leaf">אוֹרִיָּה־זָ'היָה</div><div class="leaf">אבינועם־חיים</div><div class="leaf">יהודה־פנחס</div></div></div>
+                    <div class="node">יואל ודבורה לב<div class="leaf-container"><div class="leaf">ינון־יצחק</div><div class="leaf">ידידיה</div><div class="leaf">נילי</div></div></div>
+                    <div class="node">דוד־מנחם וחנה לב<div class="leaf-container"><div class="leaf">אילה־רות</div><div class="leaf">רבקה</div><div class="leaf">נעמה</div></div></div>
+                    <div class="node">לאה ויוסף־שלמה קצבורג<div class="leaf-container"><div class="leaf">מעיין־רות</div><div class="leaf">ליאל־תהילה</div></div></div>
+                    <div class="node">מאיר ופנינה</div>
+                    <div class="node">צבי ואסתר־זיסל<div class="leaf-container"><div class="leaf">מוריה</div></div></div>
+                    <div class="node">יצחק</div>
+                </div>
+            </div>
+
+            <!-- פינחס־אליה -->
+            <div class="flex flex-col items-center">
+                <div class="node font-bold">פינחס־אליה לב</div>
+            </div>
+
+            <!-- מרדכי ואסתר לב -->
+            <div class="flex flex-col items-center">
+                <div class="node font-bold">מרדכי ואסתר לב</div>
+                <div class="gen-col mt-4">
+                    <div class="node">יהודה־עוזר</div>
+                    <div class="node">מנחם</div>
+                    <div class="node">נועה־רבקה ואליהו־משה־אברהם סינטס<div class="leaf-container"><div class="leaf">מתן־חיים</div><div class="leaf">סיוון</div></div></div>
+                    <div class="node">דבורה ויעקב איזקס</div>
+                    <div class="node">שרה</div>
+                    <div class="node">רוני</div>
+                </div>
+            </div>
+
+            <!-- בנימין־זאב ומלכה -->
+            <div class="flex flex-col items-center">
+                <div class="node font-bold">בנימין־זאב ומלכה לב</div>
+                <div class="gen-col mt-4">
+                    <div class="node">טל־מרום</div>
+                    <div class="node">אביעד</div>
+                    <div class="node">איתן</div>
+                    <div class="node">זיו</div>
+                </div>
+            </div>
+
+            <!-- מיכאל ואילה -->
+            <div class="flex flex-col items-center">
+                <div class="node font-bold">מיכאל ואילה לב</div>
+                <div class="gen-col mt-4">
+                    <div class="node">עשהאל־חיים וחסד לב<div class="leaf-container"><div class="leaf">שמואל־עוז</div><div class="leaf">יעלה</div></div></div>
+                    <div class="node">צבי־נריה</div>
+                    <div class="node">מרים</div>
+                    <div class="node">אלידע</div>
+                    <div class="node">שמחה</div>
+                    <div class="node">מעין</div>
+                </div>
+            </div>
+
         </div>
-
-    </main>
-
-    <script>
-        // משתני הזום והתנועה (Pan & Zoom)
-        let scale = 0.85;
-        let pointX = 0;
-        let pointY = 0;
-        let start = { x: 0, y: 0 };
-        let isDragging = false;
-
-        // משתנים למחוות צביטה (Pinch-to-zoom) במסכי מגע
-        let tpCache = [];
-        let startDist = 0;
-        let startScale = 1;
-
-        const viewport = document.getElementById('viewport');
-        const treeCanvas = document.getElementById('tree-canvas');
-
-        // אתחול מיקום ראשוני של עץ המשפחה
-        window.onload = function() {
-            resetZoom();
-        };
-
-        // עדכון קוד עם מאזין אירועים לשינוי גודל חלון או סיבוב מסך
-        window.addEventListener('resize', function() {
-            resetZoom();
-        });
-
-        function updateTransform() {
-            treeCanvas.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
-        }
-
-        // הגדלה (Zoom In)
-        function zoomIn() {
-            scale = Math.min(scale + 0.15, 2);
-            updateTransform();
-        }
-
-        // הקטנה (Zoom Out)
-        function zoomOut() {
-            scale = Math.max(scale - 0.15, 0.2);
-            updateTransform();
-        }
-
-        // אפס מיקום ומרכז בצורה רספונסיבית וחכמה
-        function resetZoom() {
-            const viewportRect = viewport.getBoundingClientRect();
-            const canvasRect = treeCanvas.getBoundingClientRect();
-            
-            // הגדרת קנה מידה התחלתי לפי רוחב המסך הזמין בפועל
-            scale = Math.min(viewportRect.width / canvasRect.width, 0.85);
-            if (scale < 0.25) scale = 0.25; // קביעת ערך מינימלי למניעת התכווצות יתר בניידים קטנים מאוד
-            
-            // חישוב המרכז המדויק
-            pointX = (viewportRect.width - (canvasRect.width * scale)) / 2;
-            pointY = 40; // ריווח קל מלמעלה
-            
-            updateTransform();
-        }
-
-        // התחלת גרירה בעכבר
-        viewport.addEventListener('mousedown', function(e) {
-            if (e.target.closest('input') || e.target.closest('button')) return;
-            
-            isDragging = true;
-            viewport.style.cursor = 'grabbing';
-            start = { x: e.clientX - pointX, y: e.clientY - pointY };
-        });
-
-        // תנועת גרירה בעכבר
-        window.addEventListener('mousemove', function(e) {
-            if (!isDragging) return;
-            pointX = e.clientX - start.x;
-            pointY = e.clientY - start.y;
-            updateTransform();
-        });
-
-        // סיום גרירה בעכבר
-        window.addEventListener('mouseup', function() {
-            isDragging = false;
-            viewport.style.cursor = 'grab';
-        });
-
-        // תמיכה בזום באמצעות גלגלת העכבר
-        viewport.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            const zoomIntensity = 0.05;
-            const mouseX = e.clientX - viewport.getBoundingClientRect().left;
-            const mouseY = e.clientY - viewport.getBoundingClientRect().top;
-
-            const targetX = (mouseX - pointX) / scale;
-            const targetY = (mouseY - pointY) / scale;
-
-            if (e.deltaY < 0) {
-                scale = Math.min(scale + zoomIntensity, 2);
-            } else {
-                scale = Math.max(scale - zoomIntensity, 0.2);
-            }
-
-            pointX = mouseX - targetX * scale;
-            pointY = mouseY - targetY * scale;
-
-            updateTransform();
-        }, { passive: false });
-
-        // תמיכה מורחבת במגע לניידים וטאבלטים (גרירה וזום בצביטה)
-        viewport.addEventListener('touchstart', function(e) {
-            if (e.target.closest('input') || e.target.closest('button')) return;
-
-            if (e.touches.length === 1) {
-                // גרירה באצבע אחת
-                isDragging = true;
-                const touch = e.touches[0];
-                start = { x: touch.clientX - pointX, y: touch.clientY - pointY };
-            } else if (e.touches.length === 2) {
-                // זיהוי צביטה לשתי אצבעות
-                isDragging = false; // מניעת גרירה במקביל לצביטה
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                startDist = Math.sqrt(dx * dx + dy * dy);
-                startScale = scale;
-
-                // חישוב מרכז הצביטה לצורך מיקוד הזום
-                const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - viewport.getBoundingClientRect().left;
-                const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - viewport.getBoundingClientRect().top;
-                this.targetX = (midX - pointX) / scale;
-                this.targetY = (midY - pointY) / scale;
-                this.midX = midX;
-                this.midY = midY;
-            }
-        }, { passive: true });
-
-        viewport.addEventListener('touchmove', function(e) {
-            if (e.touches.length === 1 && isDragging) {
-                // תנועת גרירה
-                const touch = e.touches[0];
-                pointX = touch.clientX - start.x;
-                pointY = touch.clientY - start.y;
-                updateTransform();
-            } else if (e.touches.length === 2 && startDist > 0) {
-                // תנועת צביטה (זום)
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                
-                // חישוב סקייל חדש
-                let factor = dist / startDist;
-                scale = Math.max(0.2, Math.min(startScale * factor, 2));
-
-                // שמירה על מיקוד הזום במרכז שבין שתי האצבעות
-                if (this.targetX !== undefined && this.targetY !== undefined) {
-                    pointX = this.midX - this.targetX * scale;
-                    pointY = this.midY - this.targetY * scale;
-                }
-                updateTransform();
-            }
-        }, { passive: true });
-
-        viewport.addEventListener('touchend', function(e) {
-            if (e.touches.length < 2) {
-                startDist = 0;
-            }
-            if (e.touches.length === 0) {
-                isDragging = false;
-            }
-        });
-    </script>
+    </div>
 </body>
 </html>
-```
-eof
-
-הסרתי את תיבת החיפוש ואת הקוד התואם לה לגמרי. כעת הממשק נקי ומציג רק את האילן המרכזי, כפתורי השליטה וכותרת המשפחה המעודכנת.

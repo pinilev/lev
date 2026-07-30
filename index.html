@@ -3,65 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עץ משפחה - יצחק ורות לב ז"ל</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
         
+        body { 
+            font-family: 'Assistant', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+
         /* מחבר את הדורות */
-        .tree-container { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        
-        .gen-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; margin-bottom: 30px; }
-        
-        .node { 
-            background: white; 
-            border: 2px solid #3b82f6; 
-            border-radius: 12px; 
-            padding: 12px; 
-            margin: 5px; 
-            min-width: 140px; 
-            text-align: center; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        .tree-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
             position: relative;
+            z-index: 10;
+        }
+        
+        .gen-row { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 24px; 
+            width: 100%; 
+            margin-bottom: 30px; 
+        }
+
+        /* כרטיס דור / משפחה עם אפקט זכוכית */
+        .node { 
+            background: rgba(255, 255, 255, 0.88); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3); 
+            border-radius: 14px; 
+            padding: 14px 16px; 
+            margin: 6px 0; 
+            min-width: 160px; 
+            text-align: center; 
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
+            position: relative;
+            transition: all 0.25s ease-in-out;
+        }
+
+        .node:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.15), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+            border-color: rgba(59, 130, 246, 0.6);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .node-header {
+            background: rgba(238, 242, 255, 0.9);
+            border: 2px solid #3b82f6;
+            color: #1e3a8a;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
         }
 
         .leaf-container { 
             display: flex; 
             flex-wrap: wrap; 
             justify-content: center; 
-            gap: 5px; 
+            gap: 6px; 
             margin-top: 10px; 
             border-top: 1px dashed #cbd5e1; 
-            padding-top: 8px;
+            padding-top: 10px;
         }
 
         .leaf { 
-            font-size: 0.75rem; 
-            color: #475569; 
-            background: #f1f5f9; 
+            font-size: 0.8rem; 
+            font-weight: 500;
+            color: #334155; 
+            background: rgba(241, 245, 249, 0.9); 
             border: 1px solid #e2e8f0; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            transition: background 0.2s ease;
+        }
+
+        .leaf:hover {
+            background: #e2e8f0;
+            color: #0f172a;
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .gen-row { flex-direction: column; align-items: center; }
-            .node { width: 90%; min-width: auto; }
+            .node { width: 95%; min-width: auto; }
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
-    <div class="text-center py-10 px-4">
-        <h1 class="text-3xl md:text-4xl font-bold text-slate-800 bg-white p-6 rounded-2xl shadow-lg inline-block border-b-4 border-blue-500">יצחק ורות לב ז"ל</h1>
+<body class="bg-gradient-to-b from-slate-100 via-blue-50/40 to-emerald-50/30 min-h-screen text-slate-800 relative overflow-x-hidden">
+
+    <!-- כפתור הורדה עדין בצד שמאל למעלה -->
+    <div class="fixed top-4 left-4 z-50">
+        <button id="download-btn" onclick="downloadTreeImage()" class="flex items-center gap-2 bg-white/90 hover:bg-white text-slate-700 hover:text-blue-600 font-medium text-xs md:text-sm px-3.5 py-2 rounded-xl shadow-md hover:shadow-lg border border-slate-200 transition-all duration-200 backdrop-blur-md active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>הורד כתמונה</span>
+        </button>
     </div>
 
-    <div class="tree-container">
+    <!-- ציור עץ עבות גדול ושקוף ברקע -->
+    <div class="fixed inset-0 pointer-events-none z-0 flex items-center justify-center overflow-hidden opacity-15 select-none" aria-hidden="true">
+        <svg class="w-[1200px] h-[1200px] max-w-none transform translate-y-12 scale-110 md:scale-125" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- מדרגי צבעים לגזע ולעלים -->
+                <linearGradient id="trunkGrad" x1="400" y1="800" x2="400" y2="300" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#271b0c" />
+                    <stop offset="50%" stop-color="#4a3219" />
+                    <stop offset="100%" stop-color="#1b4332" />
+                </linearGradient>
+                
+                <radialGradient id="leafGrad1" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#2d6a4f" stop-opacity="0.9" />
+                    <stop offset="70%" stop-color="#1b4332" stop-opacity="0.7" />
+                    <stop offset="100%" stop-color="#081c15" stop-opacity="0.4" />
+                </radialGradient>
+
+                <radialGradient id="leafGrad2" cx="40%" cy="40%" r="60%">
+                    <stop offset="0%" stop-color="#40916c" stop-opacity="0.85" />
+                    <stop offset="80%" stop-color="#2d6a4f" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="#1b4332" stop-opacity="0.2" />
+                </radialGradient>
+                
+                <radialGradient id="leafGrad3" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#52b788" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#2d6a4f" stop-opacity="0.3" />
+                </radialGradient>
+            </defs>
+
+            <!-- שורשי העץ התחתונים -->
+            <g stroke="url(#trunkGrad)" stroke-linecap="round" fill="none">
+                <path d="M 400 780 C 370 790, 260 810, 180 830" stroke-width="28" opacity="0.8"/>
+                <path d="M 400 780 C 430 790, 540 810, 620 830" stroke-width="28" opacity="0.8"/>
+                <path d="M 390 770 C 330 790, 220 800, 120 810" stroke-width="18" opacity="0.6"/>
+                <path d="M 410 770 C 470 790, 580 800, 680 810" stroke-width="18" opacity="0.6"/>
+            </g>
+
+            <!-- גזע מרכזי רחב ועבות -->
+            <path d="M 340 800 
+                     C 350 680, 310 550, 240 440 
+                     C 220 410, 170 350, 110 310
+                     C 160 330, 230 380, 280 430
+                     C 320 470, 350 520, 370 590
+                     C 380 520, 370 430, 330 350
+                     C 300 290, 240 230, 170 180
+                     C 230 210, 310 270, 350 340
+                     C 380 395, 395 460, 400 520
+                     C 405 460, 420 395, 450 340
+                     C 490 270, 570 210, 630 180
+                     C 560 230, 500 290, 470 350
+                     C 430 430, 420 520, 430 590
+                     C 450 520, 480 470, 520 430
+                     C 570 380, 640 330, 690 310
+                     C 630 350, 580 410, 560 440
+                     C 490 550, 450 680, 460 800 
+                     Z" 
+                  fill="url(#trunkGrad)" />
+
+            <!-- ענפי משנה וענפים עדינים נפרשים -->
+            <g stroke="url(#trunkGrad)" fill="none" stroke-linecap="round">
+                <!-- ענפים שמאליים -->
+                <path d="M 280 430 C 220 390, 150 380, 80 370" stroke-width="14"/>
+                <path d="M 230 370 C 180 320, 130 270, 70 240" stroke-width="10"/>
+                <path d="M 330 350 C 270 290, 200 250, 130 220" stroke-width="12"/>
+                <path d="M 350 340 C 330 260, 280 180, 210 130" stroke-width="14"/>
+                
+                <!-- ענפים מרכזיים עליונים -->
+                <path d="M 380 370 C 360 270, 340 170, 300 90" stroke-width="12"/>
+                <path d="M 400 340 C 400 240, 400 150, 400 70" stroke-width="14"/>
+                <path d="M 420 370 C 440 270, 460 170, 500 90" stroke-width="12"/>
+
+                <!-- ענפים ימניים -->
+                <path d="M 450 340 C 470 260, 520 180, 590 130" stroke-width="14"/>
+                <path d="M 470 350 C 530 290, 600 250, 670 220" stroke-width="12"/>
+                <path d="M 520 430 C 580 390, 655 380, 720 370" stroke-width="14"/>
+                <path d="M 570 370 C 620 320, 670 270, 730 240" stroke-width="10"/>
+            </g>
+
+            <!-- צמרת עבותה - גושי עלים בצפיפות נפחית (Lush Canopy) -->
+            <g opacity="0.85">
+                <!-- שכבה אחורית כהה -->
+                <circle cx="400" cy="180" r="140" fill="url(#leafGrad1)" />
+                <circle cx="260" cy="220" r="130" fill="url(#leafGrad1)" />
+                <circle cx="540" cy="220" r="130" fill="url(#leafGrad1)" />
+                <circle cx="160" cy="300" r="110" fill="url(#leafGrad1)" />
+                <circle cx="640" cy="300" r="110" fill="url(#leafGrad1)" />
+
+                <!-- שכבה אמצעית - נפח מרכזי -->
+                <circle cx="340" cy="130" r="120" fill="url(#leafGrad2)" />
+                <circle cx="460" cy="130" r="120" fill="url(#leafGrad2)" />
+                <circle cx="210" cy="180" r="110" fill="url(#leafGrad2)" />
+                <circle cx="590" cy="180" r="110" fill="url(#leafGrad2)" />
+                <circle cx="110" cy="260" r="95" fill="url(#leafGrad2)" />
+                <circle cx="690" cy="260" r="95" fill="url(#leafGrad2)" />
+
+                <!-- שכבת היקף ועלווה עליונה -->
+                <circle cx="400" cy="90"  r="100" fill="url(#leafGrad3)" />
+                <circle cx="290" cy="100" r="90"  fill="url(#leafGrad3)" />
+                <circle cx="510" cy="100" r="90"  fill="url(#leafGrad3)" />
+                <circle cx="150" cy="200" r="85"  fill="url(#leafGrad3)" />
+                <circle cx="650" cy="200" r="85"  fill="url(#leafGrad3)" />
+                <circle cx="270" cy="280" r="90"  fill="url(#leafGrad3)" />
+                <circle cx="530" cy="280" r="90"  fill="url(#leafGrad3)" />
+                <circle cx="400" cy="260" r="110" fill="url(#leafGrad3)" />
+            </g>
+
+            <!-- נגיעות נקודות עלים קטנות מסביב לצמרת לקבלת תחושה טבעית ועשירה -->
+            <g fill="#52b788" opacity="0.6">
+                <circle cx="380" cy="30" r="8" />
+                <circle cx="420" cy="25" r="12" />
+                <circle cx="240" cy="60" r="10" />
+                <circle cx="560" cy="55" r="9" />
+                <circle cx="120" cy="140" r="11" />
+                <circle cx="680" cy="130" r="10" />
+                <circle cx="70"  cy="210" r="8" />
+                <circle cx="730" cy="200" r="9" />
+                <circle cx="310" cy="40" r="14" />
+                <circle cx="490" cy="35" r="11" />
+            </g>
+        </svg>
+    </div>
+
+    <header class="relative z-10 text-center pt-10 pb-6 px-4">
+        <div class="inline-block bg-white/80 backdrop-blur-md px-8 py-5 rounded-3xl shadow-xl border border-blue-100 border-b-4 border-b-blue-600">
+            <h1 class="text-3xl md:text-5xl font-extrabold text-slate-800 tracking-wide drop-shadow-sm">
+                יצחק ורות לב ז"ל
+            </h1>
+        </div>
+    </header>
+
+    <main class="tree-container">
         <div class="gen-row">
             
             <!-- אהרון ושלומית־דבורה סוכצ'בסקי -->
             <div class="flex flex-col items-center">
-                <div class="node font-bold">אהרון ושלומית־דבורה סוכצ'בסקי</div>
-                <div class="gen-col mt-4">
+                <div class="node node-header">אהרון ושלומית־דבורה סוכצ'בסקי</div>
+                <div class="gen-col mt-4 w-full">
                     <div class="node">ישראל ושרה־לאה<div class="leaf-container"><div class="leaf">שמחה־בונם</div><div class="leaf">מלכה</div><div class="leaf">יצחק־מאיר</div><div class="leaf">שמואל־יהודה</div><div class="leaf">שלמה</div><div class="leaf">צבי־אלימלך</div><div class="leaf">יוטא־הענא</div></div></div>
                     <div class="node">אברהם־מרדכי ואסתר־ליבה<div class="leaf-container"><div class="leaf">חנה־רוייזי</div><div class="leaf">יצחק</div><div class="leaf">רות</div><div class="leaf">שמואל</div><div class="leaf">חיים־יחזקאל</div></div></div>
                     <div class="node">שמואל ורות<div class="leaf-container"><div class="leaf">רחל־רוייזי</div><div class="leaf">שרה־הינדה</div><div class="leaf">שלמה־זלמן</div><div class="leaf">יצחק־מאיר</div><div class="leaf">יהודית</div><div class="leaf">יוטא־הענא־ראצל</div></div></div>
@@ -74,8 +258,8 @@
 
             <!-- נתן ובלה לב -->
             <div class="flex flex-col items-center">
-                <div class="node font-bold">נתן ובלה לב</div>
-                <div class="gen-col mt-4">
+                <div class="node node-header">נתן ובלה לב</div>
+                <div class="gen-col mt-4 w-full">
                     <div class="node">מיכל ויהונתן פרטוק<div class="leaf-container"><div class="leaf">הדר־רות</div><div class="leaf">אוֹרִיָּה־זָ'היָה</div><div class="leaf">אבינועם־חיים</div><div class="leaf">יהודה־פנחס</div></div></div>
                     <div class="node">יואל ודבורה לב<div class="leaf-container"><div class="leaf">ינון־יצחק</div><div class="leaf">ידידיה</div><div class="leaf">נילי</div></div></div>
                     <div class="node">דוד־מנחם וחנה לב<div class="leaf-container"><div class="leaf">אילה־רות</div><div class="leaf">רבקה</div><div class="leaf">נעמה</div></div></div>
@@ -88,13 +272,13 @@
 
             <!-- פינחס־אליה -->
             <div class="flex flex-col items-center">
-                <div class="node font-bold">פינחס־אליה לב</div>
+                <div class="node node-header">פינחס־אליה לב</div>
             </div>
 
             <!-- מרדכי ואסתר לב -->
             <div class="flex flex-col items-center">
-                <div class="node font-bold">מרדכי ואסתר לב</div>
-                <div class="gen-col mt-4">
+                <div class="node node-header">מרדכי ואסתר לב</div>
+                <div class="gen-col mt-4 w-full">
                     <div class="node">יהודה־עוזר</div>
                     <div class="node">מנחם</div>
                     <div class="node">נועה־רבקה ואליהו־משה־אברהם סינטס<div class="leaf-container"><div class="leaf">מתן־חיים</div><div class="leaf">סיוון</div></div></div>
@@ -106,8 +290,8 @@
 
             <!-- בנימין־זאב ומלכה -->
             <div class="flex flex-col items-center">
-                <div class="node font-bold">בנימין־זאב ומלכה לב</div>
-                <div class="gen-col mt-4">
+                <div class="node node-header">בנימין־זאב ומלכה לב</div>
+                <div class="gen-col mt-4 w-full">
                     <div class="node">טל־מרום</div>
                     <div class="node">אביעד</div>
                     <div class="node">איתן</div>
@@ -117,8 +301,8 @@
 
             <!-- מיכאל ואילה -->
             <div class="flex flex-col items-center">
-                <div class="node font-bold">מיכאל ואילה לב</div>
-                <div class="gen-col mt-4">
+                <div class="node node-header">מיכאל ואילה לב</div>
+                <div class="gen-col mt-4 w-full">
                     <div class="node">עשהאל־חיים וחסד לב<div class="leaf-container"><div class="leaf">שמואל־עוז</div><div class="leaf">יעלה</div></div></div>
                     <div class="node">צבי־נריה</div>
                     <div class="node">מרים</div>
@@ -129,6 +313,53 @@
             </div>
 
         </div>
-    </div>
+    </main>
+
+    <footer class="relative z-10 text-center py-6 text-slate-500 text-xs font-light">
+        "עֲטֶרֶת זְקֵנִים בְּנֵי בָנִים, וְתִפְאֶרֶת בָּנִים אֲבוֹתָם"
+    </footer>
+
+    <script>
+        async function downloadTreeImage() {
+            const btn = document.getElementById('download-btn');
+            const originalContent = btn.innerHTML;
+            
+            btn.innerHTML = `
+                <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>מכין תמונה...</span>
+            `;
+            btn.disabled = true;
+
+            try {
+                // הסתרת הכפתור בלבד בזמן יצירת התמונה
+                btn.style.visibility = 'hidden';
+
+                const canvas = await html2canvas(document.body, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#f1f5f9',
+                    windowWidth: document.documentElement.scrollWidth,
+                    windowHeight: document.documentElement.scrollHeight
+                });
+
+                btn.style.visibility = 'visible';
+
+                const link = document.createElement('a');
+                link.download = 'עץ_משפחה_יצחק_ורות_לב.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error('Download error:', err);
+                btn.style.visibility = 'visible';
+            } finally {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
